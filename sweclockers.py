@@ -12,7 +12,7 @@ catalog = BeautifulSoup(catalog.content, "html.parser")
 
 # Gets the keywords from a txt file
 with open("keywords.txt") as keywords_txt:
-		keywords = keywords_txt.read().split(",")
+	keywords = keywords_txt.read().split(",")
 
 print(keywords)
 
@@ -38,7 +38,7 @@ class sweclockers(object):
 				page = div
 		for p in page.find_all("p"):
 			text += str(p)
-	
+		
 		return text
 
 	def amount_replies(self):
@@ -63,6 +63,15 @@ class sweclockers(object):
 				return True
 		else:
 			return False
+	
+	def make_old(self):
+		old_posts_txt.write(self.url+",")
+	
+	def check_old(self):
+		if self.url in old_posts.read().split(","):
+			return False
+		else:
+			return True
 
 def get_catalog():
 	articles = []
@@ -78,10 +87,16 @@ def get_catalog():
 		quit()
 
 	return articles
-while True:
-	# Forever loop that checks the keywords and if true sends a pushbullet
-	for article_url in get_catalog():
-		article = sweclockers(article_url)
-		if article.check_keyword():
-			push = pb.push_link(article.headline(), article.url)
-	time.sleep(600)
+
+with open("old_posts.txt", "r+") as old_posts_txt:
+	old_posts = old_posts_txt
+	while True:
+		# Forever loop that checks the keywords and if true sends a pushbullet
+		for article_url in get_catalog():
+			article = sweclockers(article_url)
+			print(article.url)
+			if article.check_keyword() and article.check_old():
+				print("Pushing %s" % article.headline())
+				push = pb.push_link(article.headline(), article.url)
+				article.make_old()
+		time.sleep(600)
