@@ -10,11 +10,12 @@ pb = Pushbullet("API KEY")
 catalog = requests.get("http://www.sweclockers.com/forum/118-annonskommentarer")
 catalog = BeautifulSoup(catalog.content, "html.parser")
 
+old_posts= []
+
 # Gets the keywords from a txt file
 with open("keywords.txt") as keywords_txt:
 	keywords = keywords_txt.read().split(",")
 
-print(keywords)
 
 class sweclockers(object):
 	# Class for induvidial articles
@@ -37,7 +38,7 @@ class sweclockers(object):
 			if div.get("class") == ["text"]:
 				page = div
 		for p in page.find_all("p"):
-			text += str(p)
+			text += str(p.get_text())
 		
 		return text
 
@@ -65,10 +66,10 @@ class sweclockers(object):
 			return False
 	
 	def make_old(self):
-		old_posts_txt.write(self.url+",")
+		old_posts.append(self.url)
 	
 	def check_old(self):
-		if self.url in old_posts.read().split(","):
+		if self.url in old_posts:
 			return False
 		else:
 			return True
@@ -88,15 +89,13 @@ def get_catalog():
 
 	return articles
 
-with open("old_posts.txt", "r+") as old_posts_txt:
-	old_posts = old_posts_txt
-	while True:
-		# Forever loop that checks the keywords and if true sends a pushbullet
-		for article_url in get_catalog():
-			article = sweclockers(article_url)
-			print(article.url)
-			if article.check_keyword() and article.check_old():
-				print("Pushing %s" % article.headline())
-				push = pb.push_link(article.headline(), article.url)
-				article.make_old()
-		time.sleep(600)
+while True:
+	# Forever loop that checks the keywords and if true sends a pushbullet
+	for article_url in get_catalog():
+		article = sweclockers(article_url)
+		print(article.url)
+		if article.check_keyword() and article.check_old():
+			print("Pushing %s" % article.headline())
+			push = pb.push_link(article.headline(), article.url)
+			article.make_old()
+	time.sleep(600)
