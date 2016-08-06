@@ -4,7 +4,7 @@ import requests, time
 from bs4 import BeautifulSoup
 from pushbullet import Pushbullet
 
-pb = Pushbullet("API KEY")
+pb = Pushbullet("API")
 
 # Only first page
 catalog = requests.get("http://www.sweclockers.com/forum/118-annonskommentarer")
